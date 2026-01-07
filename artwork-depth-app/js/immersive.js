@@ -51,7 +51,14 @@ async function init() {
 
 // 2. Three.js Setup
 function initThreeJS() {
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:53',message:'initThreeJS entry',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight,devicePixelRatio:window.devicePixelRatio},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     const container = document.getElementById('canvas-container');
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:57',message:'container found',data:{containerExists:!!container,containerId:container?.id,containerComputedStyle:container?window.getComputedStyle(container).width+'x'+window.getComputedStyle(container).height:'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     
     scene = new THREE.Scene();
     
@@ -61,7 +68,26 @@ function initThreeJS() {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    
+    // #region agent log
+    const canvasEl = renderer.domElement;
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:66',message:'renderer created, before append',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    
     container.appendChild(renderer.domElement);
+    
+    // 强制设置 canvas 元素为全屏样式
+    const canvasEl = renderer.domElement;
+    canvasEl.style.position = 'absolute';
+    canvasEl.style.top = '0';
+    canvasEl.style.left = '0';
+    canvasEl.style.width = '100%';
+    canvasEl.style.height = '100%';
+    canvasEl.style.display = 'block';
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:77',message:'after setting canvas styles',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height,containerComputedWidth:window.getComputedStyle(container).width,containerComputedHeight:window.getComputedStyle(container).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     
     // Ambient light
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
@@ -199,9 +225,21 @@ function setupInteraction() {
     
     // Resize
     window.addEventListener('resize', () => {
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:201',message:'resize event',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // 确保 canvas 样式保持全屏
+        const canvasEl = renderer.domElement;
+        canvasEl.style.width = '100%';
+        canvasEl.style.height = '100%';
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:210',message:'after resize setSize',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
     });
 
     // Upload
