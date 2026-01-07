@@ -415,6 +415,16 @@ function setupInteraction() {
         };
         reader.readAsDataURL(file);
     });
+    
+    // Close/Expand Overlay Button
+    const closeBtn = document.getElementById('close-overlay-btn');
+    const uiOverlay = document.getElementById('ui-overlay');
+    if (closeBtn && uiOverlay) {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止事件冒泡
+            uiOverlay.classList.toggle('collapsed');
+        });
+    }
 }
 
 function handleGyro(e) {
