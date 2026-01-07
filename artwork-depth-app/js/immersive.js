@@ -276,10 +276,51 @@ function updateMesh(img, depthCanvas) {
     mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
     
+    // 调整相机距离以铺满屏幕 (Cover Mode)
+    fitCameraToMesh(mesh, camera);
+    
     // 激活 UI 控制（图片加载后自动隐藏按钮）
     if (window.uiController) {
         window.uiController.activate();
     }
+}
+
+// 动态调整相机距离，使 Mesh 铺满屏幕 (Cover Mode)
+function fitCameraToMesh(mesh, camera) {
+    if (!mesh || !camera) return;
+
+    // Mesh 的尺寸（PlaneGeometry）
+    // 我们在 updateMesh 中设置的高度固定为 2
+    const meshHeight = 2;
+    const meshWidth = mesh.geometry.parameters.width;
+    const imageAspect = meshWidth / meshHeight;
+    const screenAspect = window.innerWidth / window.innerHeight;
+
+    const fov = camera.fov;
+    
+    // 计算视口高度 vH = 2 * tan(fov/2) * d
+    // 我们需要求解 d (camera.position.z)
+    
+    let dist;
+    
+    // Cover 模式逻辑：
+    // 如果屏幕比图片更宽 (Screen Wider)，我们需要 Mesh 宽度铺满视口宽度 -> 裁剪高度
+    // 如果屏幕比图片更高 (Screen Taller)，我们需要 Mesh 高度铺满视口高度 -> 裁剪宽度
+    
+    if (screenAspect > imageAspect) {
+        // 屏幕更宽：基于宽度适配
+        // vW = meshWidth
+        // vH * screenAspect = meshWidth
+        // (2 * tan(fov/2) * d) * screenAspect = meshWidth
+        dist = meshWidth / (2 * Math.tan((fov * Math.PI) / 360) * screenAspect);
+    } else {
+        // 屏幕更高：基于高度适配
+        // vH = meshHeight
+        dist = meshHeight / (2 * Math.tan((fov * Math.PI) / 360));
+    }
+    
+    //稍微拉近一点点，避免边缘出现缝隙
+    camera.position.z = dist * 0.99;
 }
 
 // 4. Interaction (Gyro + Mouse)
@@ -334,12 +375,14 @@ function setupInteraction() {
     
     // Resize
     window.addEventListener('resize', () => {
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:338',message:'resize event',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // 重新调整相机位置以保持铺满
+        if (mesh) {
+            fitCameraToMesh(mesh, camera);
+        }
         
         // 确保容器和 canvas 样式保持全屏
         const container = document.getElementById('canvas-container');
@@ -356,10 +399,6 @@ function setupInteraction() {
         document.body.style.padding = '0';
         document.documentElement.style.margin = '0';
         document.documentElement.style.padding = '0';
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:358',message:'after resize setSize',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height,containerWidth:container?.offsetWidth,containerHeight:container?.offsetHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
     });
 
     // Upload
