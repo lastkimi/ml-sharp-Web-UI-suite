@@ -332,24 +332,25 @@ function updateRender() {
     }
 
     // --- 合成逻辑 ---
-    // 计算图片铺满 canvas 的尺寸和位置
+    // 计算图片铺满 canvas 的尺寸和位置（cover 模式：完全填充，可能裁剪）
     const imgAspect = originalWidth / originalHeight;
     const canvasAspect = w / h;
     
     let drawWidth, drawHeight, offsetX, offsetY;
     
+    // 使用 cover 模式：图片完全填充 canvas
     if (imgAspect > canvasAspect) {
-        // 图片更宽，以宽度为准
-        drawWidth = w;
-        drawHeight = w / imgAspect;
-        offsetX = 0;
-        offsetY = (h - drawHeight) / 2;
-    } else {
-        // 图片更高，以高度为准
+        // 图片更宽，以高度为准（图片会超出宽度）
         drawHeight = h;
         drawWidth = h * imgAspect;
         offsetX = (w - drawWidth) / 2;
         offsetY = 0;
+    } else {
+        // 图片更高，以宽度为准（图片会超出高度）
+        drawWidth = w;
+        drawHeight = w / imgAspect;
+        offsetX = 0;
+        offsetY = (h - drawHeight) / 2;
     }
 
     // 1. 绘制模糊背景层（铺满 canvas）
