@@ -138,9 +138,6 @@ canvas {
     /* 确保卡片在移动端有足够的间距 */
     .card {
         margin-bottom: 0;
-    }
-
-    .card {
         border-radius: 10px;
     }
 
@@ -277,13 +274,7 @@ canvas {
         margin: 3px;
     }
 
-    .canvas-container {
-        min-height: 250px;
-    }
-
-    canvas {
-        max-height: 350px;
-    }
+    /* Canvas 已通过上面的全屏样式设置，这里不需要额外设置 */
 }
 
 /* 横屏优化 */
@@ -296,10 +287,8 @@ canvas {
         font-size: 1.5em;
     }
 
-    .canvas-container {
-        min-height: 250px;
-    }
-
+    /* Canvas 已通过上面的全屏样式设置 */
+    
     .ui-overlay {
         bottom: 10px;
         padding: 10px 18px;
