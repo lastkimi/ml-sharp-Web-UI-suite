@@ -87,6 +87,71 @@ function handleImageUpload(e) {
     reader.readAsDataURL(file);
 }
 
+// 调整 canvas 为全屏尺寸
+function resizeCanvas() {
+    // 获取屏幕尺寸
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // 设置 canvas 的实际像素尺寸（使用设备像素比以获得清晰度）
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = screenWidth * dpr;
+    canvas.height = screenHeight * dpr;
+    
+    // 设置 canvas 的显示尺寸（CSS 控制）
+    canvas.style.width = screenWidth + 'px';
+    canvas.style.height = screenHeight + 'px';
+    
+    // 缩放上下文以匹配设备像素比（这样绘制时可以使用屏幕坐标）
+    ctx.scale(dpr, dpr);
+}
+
+// 绘制图片铺满 canvas（保持宽高比，图片完全填充 canvas）
+function drawImageToFillCanvas() {
+    if (!currentImage) return;
+    
+    const canvasDisplayWidth = window.innerWidth;
+    const canvasDisplayHeight = window.innerHeight;
+    
+    const imgAspect = originalWidth / originalHeight;
+    const canvasAspect = canvasDisplayWidth / canvasDisplayHeight;
+    
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    // 使用 cover 模式：图片完全填充 canvas，可能会裁剪
+    if (imgAspect > canvasAspect) {
+        // 图片更宽，以高度为准（图片会超出宽度）
+        drawHeight = canvasDisplayHeight;
+        drawWidth = canvasDisplayHeight * imgAspect;
+        offsetX = (canvasDisplayWidth - drawWidth) / 2;
+        offsetY = 0;
+    } else {
+        // 图片更高，以宽度为准（图片会超出高度）
+        drawWidth = canvasDisplayWidth;
+        drawHeight = canvasDisplayWidth / imgAspect;
+        offsetX = 0;
+        offsetY = (canvasDisplayHeight - drawHeight) / 2;
+    }
+    
+    // 清除画布
+    ctx.clearRect(0, 0, canvasDisplayWidth, canvasDisplayHeight);
+    
+    // 绘制图片（铺满整个 canvas）
+    ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
+}
+
+// 窗口大小变化时重新调整
+window.addEventListener('resize', function() {
+    if (currentImage) {
+        resizeCanvas();
+        if (currentMask) {
+            updateRender();
+        } else {
+            drawImageToFillCanvas();
+        }
+    }
+});
+
 // 激活 UI 控制
 function activateUIControl() {
     const controlsPanel = document.getElementById('controls-panel');
@@ -192,8 +257,9 @@ async function performSegmentation() {
 
 // 创建降级模式的蒙版（中心清晰，四周模糊）
 function createFallbackMask() {
-    const w = canvas.width;
-    const h = canvas.height;
+    // 使用显示尺寸
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     
     // 我们用 Canvas 绘制一个径向渐变作为 Mask
     // 中心白色(清晰)，边缘黑色(模糊)
