@@ -279,6 +279,10 @@ function updateMesh(img, depthCanvas) {
     // 调整相机距离以铺满屏幕 (Cover Mode)
     fitCameraToMesh(mesh, camera);
     
+    // 延迟再次调整，确保布局稳定
+    setTimeout(() => fitCameraToMesh(mesh, camera), 100);
+    setTimeout(() => fitCameraToMesh(mesh, camera), 500);
+    
     // 激活 UI 控制（图片加载后自动隐藏按钮）
     if (window.uiController) {
         window.uiController.activate();
@@ -298,27 +302,6 @@ function fitCameraToMesh(mesh, camera) {
 
     const fov = camera.fov;
     
-    // #region agent log
-    const logData = {
-        location: 'immersive.js:fitCameraToMesh',
-        message: 'Calculating camera distance',
-        data: {
-            meshWidth,
-            meshHeight,
-            imageAspect,
-            screenAspect,
-            windowWidth: window.innerWidth,
-            windowHeight: window.innerHeight,
-            fov
-        },
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        runId: 'run3',
-        hypothesisId: 'F'
-    };
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData)}).catch(()=>{});
-    // #endregion
-    
     // 计算视口高度 vH = 2 * tan(fov/2) * d
     // 我们需要求解 d (camera.position.z)
     
@@ -330,22 +313,21 @@ function fitCameraToMesh(mesh, camera) {
     
     if (screenAspect > imageAspect) {
         // 屏幕更宽：基于宽度适配
-        // vW = meshWidth
-        // vH * screenAspect = meshWidth
-        // (2 * tan(fov/2) * d) * screenAspect = meshWidth
         dist = meshWidth / (2 * Math.tan((fov * Math.PI) / 360) * screenAspect);
     } else {
         // 屏幕更高：基于高度适配
-        // vH = meshHeight
         dist = meshHeight / (2 * Math.tan((fov * Math.PI) / 360));
     }
     
-    // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:fitCameraToMesh',message:'Distance calculated',data:{dist,oldZ:camera.position.z},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
-    
-    //稍微拉近一点点，避免边缘出现缝隙
+    // 稍微拉近一点点，避免边缘出现缝隙
     camera.position.z = dist * 0.99;
+    
+    // 在页面显示调试信息（临时）
+    const debugEl = document.getElementById('debug-info');
+    if (debugEl) {
+        debugEl.textContent = `Z: ${dist.toFixed(2)}, Screen: ${window.innerWidth}x${window.innerHeight}, Mesh: ${meshWidth.toFixed(2)}x${meshHeight}`;
+        debugEl.style.opacity = '1';
+    }
 }
 
 // 4. Interaction (Gyro + Mouse)
