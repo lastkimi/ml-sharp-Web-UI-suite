@@ -298,6 +298,27 @@ function fitCameraToMesh(mesh, camera) {
 
     const fov = camera.fov;
     
+    // #region agent log
+    const logData = {
+        location: 'immersive.js:fitCameraToMesh',
+        message: 'Calculating camera distance',
+        data: {
+            meshWidth,
+            meshHeight,
+            imageAspect,
+            screenAspect,
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            fov
+        },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run3',
+        hypothesisId: 'F'
+    };
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData)}).catch(()=>{});
+    // #endregion
+    
     // 计算视口高度 vH = 2 * tan(fov/2) * d
     // 我们需要求解 d (camera.position.z)
     
@@ -318,6 +339,10 @@ function fitCameraToMesh(mesh, camera) {
         // vH = meshHeight
         dist = meshHeight / (2 * Math.tan((fov * Math.PI) / 360));
     }
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:fitCameraToMesh',message:'Distance calculated',data:{dist,oldZ:camera.position.z},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
     
     //稍微拉近一点点，避免边缘出现缝隙
     camera.position.z = dist * 0.99;
