@@ -325,26 +325,67 @@ function fitCameraToMesh(mesh, camera) {
 // 4. Interaction (Gyro + Mouse)
 function setupInteraction() {
     // Mouse
+    let isDragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let accumulatedRotationY = 0;
+    
+    document.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
     document.addEventListener('mousemove', (e) => {
-        // Desktop mouse support should always be active unless isMobile is explicitly true from Gyro
-        if (isMobile) return; 
+        if (!isDragging || isMobile) return;
         
-        // Normalize -1 to 1
-        const x = (e.clientX / window.innerWidth) * 2 - 1;
-        const y = -(e.clientY / window.innerHeight) * 2 + 1;
+        const deltaX = e.clientX - lastMouseX;
+        const deltaY = e.clientY - lastMouseY;
         
-        targetRotation.x = y * 0.5; // Max rotation angle
-        targetRotation.y = x * 0.5;
+        // Y 轴：完全 360 度旋转（累积）
+        accumulatedRotationY += deltaX * 0.01;
+        targetRotation.y = accumulatedRotationY;
+        
+        // X 轴：限制倾斜角度（不向屏幕外倾斜）
+        targetRotation.x += deltaY * 0.01;
+        targetRotation.x = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotation.x)); // 限制在 -30 到 30 度
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
     });
 
     // Handle touch move for "drag to rotate" on mobile if gyro is off
-    document.addEventListener('touchmove', (e) => {
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let touchAccumulatedY = 0;
+    
+    document.addEventListener('touchstart', (e) => {
         if (e.touches.length > 0) {
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+        }
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0 && !isMobile) {
             const touch = e.touches[0];
-            const x = (touch.clientX / window.innerWidth) * 2 - 1;
-            const y = -(touch.clientY / window.innerHeight) * 2 + 1;
-            targetRotation.x = y * 0.5;
-            targetRotation.y = x * 0.5;
+            const deltaX = touch.clientX - lastTouchX;
+            const deltaY = touch.clientY - lastTouchY;
+            
+            // Y 轴：完全 360 度旋转（累积）
+            touchAccumulatedY += deltaX * 0.01;
+            targetRotation.y = touchAccumulatedY;
+            
+            // X 轴：限制倾斜角度
+            targetRotation.x += deltaY * 0.01;
+            targetRotation.x = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotation.x)); // 限制在 -30 到 30 度
+            
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
         }
     });
     
@@ -422,8 +463,12 @@ function setupInteraction() {
     if (closeBtn && uiOverlay) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // 防止事件冒泡
+            e.preventDefault();
             uiOverlay.classList.toggle('collapsed');
+            console.log('Toggle overlay:', uiOverlay.classList.contains('collapsed'));
         });
+    } else {
+        console.warn('Close button or overlay not found:', { closeBtn, uiOverlay });
     }
 }
 
@@ -433,14 +478,22 @@ function handleGyro(e) {
     // Beta: -180 to 180 (front/back tilt)
     // Gamma: -90 to 90 (left/right tilt)
     
-    // Simple clamp and map
-    const maxTilt = 45; // degrees
-    const y = Math.max(-maxTilt, Math.min(maxTilt, e.beta || 0)) / maxTilt;
-    const x = Math.max(-maxTilt, Math.min(maxTilt, e.gamma || 0)) / maxTilt;
+    // X 轴：限制倾斜角度（不向屏幕外倾斜）
+    const maxTiltX = 30; // degrees
+    const beta = e.beta || 0;
+    targetRotation.x = Math.max(-maxTiltX * Math.PI / 180, Math.min(maxTiltX * Math.PI / 180, beta * Math.PI / 180 * 0.3));
     
-    // Note: Gyro axes might need inversion depending on orientation
-    targetRotation.x = y * 0.5;
-    targetRotation.y = x * 0.5;
+    // Y 轴：完全 360 度旋转（累积）
+    const gamma = e.gamma || 0;
+    // 将 gamma 转换为累积旋转
+    if (typeof handleGyro.lastGamma === 'undefined') {
+        handleGyro.lastGamma = gamma;
+        handleGyro.accumulatedY = 0;
+    }
+    const deltaGamma = gamma - handleGyro.lastGamma;
+    handleGyro.accumulatedY += deltaGamma * 0.02;
+    targetRotation.y = handleGyro.accumulatedY;
+    handleGyro.lastGamma = gamma;
     
     debugInfo.textContent = `Beta: ${e.beta?.toFixed(1)}, Gamma: ${e.gamma?.toFixed(1)}`;
 }
