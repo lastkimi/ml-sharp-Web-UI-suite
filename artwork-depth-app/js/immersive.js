@@ -279,9 +279,8 @@ function updateMesh(img, depthCanvas) {
     // 调整相机距离以铺满屏幕 (Cover Mode)
     fitCameraToMesh(mesh, camera);
     
-    // 延迟再次调整，确保布局稳定
+    // 延迟再次调整，确保布局稳定（移动端可能需要一点时间）
     setTimeout(() => fitCameraToMesh(mesh, camera), 100);
-    setTimeout(() => fitCameraToMesh(mesh, camera), 500);
     
     // 激活 UI 控制（图片加载后自动隐藏按钮）
     if (window.uiController) {
@@ -321,13 +320,6 @@ function fitCameraToMesh(mesh, camera) {
     
     // 稍微拉近一点点，避免边缘出现缝隙
     camera.position.z = dist * 0.99;
-    
-    // 在页面显示调试信息（临时）
-    const debugEl = document.getElementById('debug-info');
-    if (debugEl) {
-        debugEl.textContent = `Z: ${dist.toFixed(2)}, Screen: ${window.innerWidth}x${window.innerHeight}, Mesh: ${meshWidth.toFixed(2)}x${meshHeight}`;
-        debugEl.style.opacity = '1';
-    }
 }
 
 // 4. Interaction (Gyro + Mouse)
