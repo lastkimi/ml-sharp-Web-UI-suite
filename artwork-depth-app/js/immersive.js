@@ -133,18 +133,40 @@ function initThreeJS() {
     fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData3)}).catch(()=>{});
     // #endregion
     
+    // 确保容器本身是全屏的
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.right = '0';
+    container.style.bottom = '0';
+    container.style.width = '100vw';
+    container.style.height = '100vh';
+    container.style.margin = '0';
+    container.style.padding = '0';
+    container.style.zIndex = '1';
+    
     container.appendChild(renderer.domElement);
     
     // 强制设置 canvas 元素为全屏样式
     canvasEl.style.position = 'absolute';
     canvasEl.style.top = '0';
     canvasEl.style.left = '0';
+    canvasEl.style.right = '0';
+    canvasEl.style.bottom = '0';
     canvasEl.style.width = '100%';
     canvasEl.style.height = '100%';
     canvasEl.style.display = 'block';
     canvasEl.style.margin = '0';
     canvasEl.style.padding = '0';
     canvasEl.style.boxSizing = 'border-box';
+    
+    // 确保 body 和 html 也是全屏
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.overflow = 'hidden';
     
     // #region agent log
     setTimeout(() => {
@@ -315,19 +337,30 @@ function setupInteraction() {
     // Resize
     window.addEventListener('resize', () => {
         // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:201',message:'resize event',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:338',message:'resize event',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
         // #endregion
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         
-        // 确保 canvas 样式保持全屏
+        // 确保容器和 canvas 样式保持全屏
+        const container = document.getElementById('canvas-container');
+        if (container) {
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+        }
         const canvasEl = renderer.domElement;
         canvasEl.style.width = '100%';
         canvasEl.style.height = '100%';
         
+        // 确保 body 和 html 也是全屏
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.documentElement.style.margin = '0';
+        document.documentElement.style.padding = '0';
+        
         // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:210',message:'after resize setSize',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:358',message:'after resize setSize',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height,containerWidth:container?.offsetWidth,containerHeight:container?.offsetHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
         // #endregion
     });
 

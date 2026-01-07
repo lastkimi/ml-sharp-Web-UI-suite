@@ -11,10 +11,18 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    padding: 0;
     min-height: 100vh;
+}
+
+/* 针对 immersive.html 等全屏页面的特殊处理 */
+body:has(#canvas-container) {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+    width: 100vw !important;
+    height: 100vh !important;
 }
 
 .container {
@@ -50,6 +58,8 @@ header p {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     min-width: 100vw !important;
