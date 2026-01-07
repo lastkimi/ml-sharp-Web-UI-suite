@@ -23,6 +23,23 @@ const debugInfo = document.getElementById('debug-info');
 
 // 1. Initialization
 async function init() {
+    // 在初始化之前就设置全屏样式
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+    document.body.style.width = '100vw';
+    document.body.style.height = '100vh';
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.width = '100vw';
+    document.documentElement.style.height = '100vh';
+    
+    const container = document.getElementById('canvas-container');
+    if (container) {
+        container.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; z-index: 1 !important; background-color: #000; overflow: hidden; display: block; box-sizing: border-box;';
+    }
+    
     initThreeJS();
     setupInteraction();
     
@@ -133,32 +150,13 @@ function initThreeJS() {
     fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData3)}).catch(()=>{});
     // #endregion
     
-    // 确保容器本身是全屏的
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.right = '0';
-    container.style.bottom = '0';
-    container.style.width = '100vw';
-    container.style.height = '100vh';
-    container.style.margin = '0';
-    container.style.padding = '0';
-    container.style.zIndex = '1';
+    // 确保容器本身是全屏的（使用 cssText 确保覆盖所有样式）
+    container.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; z-index: 1 !important; background-color: #000; overflow: hidden; display: block; box-sizing: border-box;';
     
     container.appendChild(renderer.domElement);
     
-    // 强制设置 canvas 元素为全屏样式
-    canvasEl.style.position = 'absolute';
-    canvasEl.style.top = '0';
-    canvasEl.style.left = '0';
-    canvasEl.style.right = '0';
-    canvasEl.style.bottom = '0';
-    canvasEl.style.width = '100%';
-    canvasEl.style.height = '100%';
-    canvasEl.style.display = 'block';
-    canvasEl.style.margin = '0';
-    canvasEl.style.padding = '0';
-    canvasEl.style.boxSizing = 'border-box';
+    // 强制设置 canvas 元素为全屏样式（使用 cssText 确保覆盖所有样式）
+    canvasEl.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;';
     
     // 确保 body 和 html 也是全屏
     document.body.style.margin = '0';

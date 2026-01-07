@@ -16,13 +16,26 @@ body {
 }
 
 /* 针对 immersive.html 等全屏页面的特殊处理 */
-body:has(#canvas-container) {
+body:has(#canvas-container),
+html:has(#canvas-container) {
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
     overflow: hidden !important;
     width: 100vw !important;
     height: 100vh !important;
+    box-sizing: border-box !important;
+}
+
+/* 更通用的全屏页面处理 */
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 .container {
