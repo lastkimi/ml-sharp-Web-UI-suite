@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>沉浸式 AR 艺术展 (Depth Anything)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            overflow: hidden;
+            background-color: #000;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        .ui-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px 25px;
+            border-radius: 30px;
+            color: white;
+            text-align: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            max-width: 90%;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 200;
+            transition: opacity 0.5s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: #333;
+            margin-top: 15px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #e67e22;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        button {
+            background: #e67e22;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        #permission-btn { display: none; }
+        .tips {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+    </style>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Transformers.js (最新版) -->
+    <script type="module" src="js/immersive.js"></script>
+    <!-- Vercel Analytics -->
+    <script src="/js/analytics.js"></script>
+</head>
+<body>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="status-text" id="status-text">初始化神经网络...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="tips">首次加载模型可能需要 1-2 分钟 (30MB+)</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay">
+        <h3>🌌 AR 沉浸式查看</h3>
+        <p>晃动设备查看立体细节</p>
+        <button id="upload-btn">上传新图片</button>
+        <button id="permission-btn">开启 AR 体验</button>
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <div id="debug-info" style="font-size: 10px; margin-top:5px; opacity:0.5;"></div>
+    </div>
+
+</body>
+</html>

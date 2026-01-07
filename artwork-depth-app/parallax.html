@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D 陀螺仪景深视差效果</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            overflow: hidden; /* 防止滚动 */
+            background-color: #1a1a1a;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .ui-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 30px;
+            color: white;
+            text-align: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .ui-overlay button {
+            background: #e67e22;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        #permission-btn {
+            display: none; /* 默认隐藏，仅在iOS需要时显示 */
+        }
+    </style>
+    <!-- 引入 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Vercel Analytics -->
+    <script src="/js/analytics.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay">
+        <div>
+            <h3>🖼️ 沉浸式 3D 视差查看器</h3>
+            <p>移动鼠标或晃动手机查看景深效果</p>
+        </div>
+        <button id="upload-btn">更换图片</button>
+        <button id="permission-btn">开启陀螺仪权限 (iOS)</button>
+        <input type="file" id="file-input" accept="image/*" hidden>
+    </div>
+
+    <script src="js/parallax.js"></script>
+</body>
+</html>

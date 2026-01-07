@@ -1,0 +1,11 @@
+/* Common Styles */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #e67e22;
+    --bg-color: #f4f6f9;
+    --text-color: #333;
+    --card-bg: #ffffff;
+}
+
+/* Ensure body doesn't have fixed flex center from previous styles if loaded globally */
+/* But here we scope it or override */

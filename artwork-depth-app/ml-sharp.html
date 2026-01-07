@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ML-Sharp 3DGS 查看器</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        .ui-overlay {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); padding: 15px 25px; border-radius: 30px;
+            color: white; text-align: center; z-index: 100; backdrop-filter: blur(5px);
+            display: flex; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
+            z-index: 200; transition: opacity 0.5s;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        
+        button {
+            background: #007AFF; border: none; color: white; padding: 10px 24px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #007AFF; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .stats {
+            position: absolute; top: 10px; left: 10px; color: rgba(255,255,255,0.5);
+            font-size: 12px; pointer-events: none;
+        }
+    </style>
+    <!-- Import Three.js and GaussianSplats3D -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/",
+                "@mkkellogg/gaussian-splats-3d": "https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.3.9/build/gaussian-splats-3d.module.js"
+            }
+        }
+    </script>
+    <!-- Vercel Analytics -->
+    <script src="/js/analytics.js"></script>
+</head>
+<body>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <div id="status-text" style="margin-top:15px; font-weight: 500;">准备就绪</div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="ui-overlay">
+        <div style="text-align: left;">
+            <div style="font-weight: 600;">ML-Sharp 3DGS</div>
+            <div style="font-size: 12px; opacity: 0.6;">支持 .ply 格式</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="upload-btn" style="background: #007AFF;">生成 3D (图片)</button>
+            <button id="load-ply-btn" style="background: #34c759;">查看 .ply 文件</button>
+        </div>
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <input type="file" id="ply-input" accept=".ply" hidden>
+    </div>
+    
+    <!-- Container for the viewer -->
+    <div id="viewer-root" style="width: 100vw; height: 100vh;"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { Viewer } from '@mkkellogg/gaussian-splats-3d';
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const statusText = document.getElementById('status-text');
+        
+        function updateStatus(text, show) {
+            statusText.innerText = text;
+            if (show) loadingOverlay.classList.remove('hidden');
+            else loadingOverlay.classList.add('hidden');
+        }
+
+        // Initialize Viewer
+        // Create a root div specifically for the viewer inside our viewer-root
+        // to prevent conflicts with other DOM elements
+        const viewerContainer = document.createElement('div');
+        viewerContainer.style.width = '100%';
+        viewerContainer.style.height = '100%';
+        document.getElementById('viewer-root').appendChild(viewerContainer);
+
+        const viewer = new Viewer({
+            'rootElement': viewerContainer,
+            'cameraUp': [0, -1, 0], // ML-Sharp Coordinate System
+            'initialCameraPosition': [0, 0, 5],
+            'initialCameraLookAt': [0, 0, 0],
+            'sphericalHarmonicsDegree': 0, // ML-Sharp only outputs SH0
+            'antialias': true
+        });
+        
+        viewer.init();
+
+        // --- Data Conversion & Loading ---
+        
+        async function loadAndConvertPly(url) {
+            updateStatus("下载模型数据...", true);
+            const response = await fetch(url);
+            const buffer = await response.arrayBuffer();
+            
+            updateStatus("转换数据格式...", true);
+            
+            // 1. Parse Header
+            const headerEnd = "end_header\n";
+            const headerArr = new Uint8Array(buffer);
+            const chunk = new TextDecoder().decode(headerArr.slice(0, 2000));
+            const endIdx = chunk.indexOf(headerEnd);
+            if (endIdx === -1) throw new Error("Invalid PLY");
+            const bodyOffset = endIdx + headerEnd.length;
+            const vertexMatch = chunk.match(/element vertex (\d+)/);
+            if (!vertexMatch) throw new Error("No vertex element found");
+            const vertexCount = parseInt(vertexMatch[1]);
+            
+            // 2. Read Raw ML-Sharp Data
+            const srcData = new Float32Array(buffer.slice(bodyOffset));
+            
+            // 3. Convert to Standard Splat Format (Buffer for .splat or standard .ply)
+            // We will create a .splat file buffer in memory
+            // .splat format: position(3), scale(3), color(4), rotation(4) = 14 floats?
+            // Actually .splat is tightly packed. 
+            // Position (3 floats), Scale (3 floats), Color (4 bytes rgba), Rotation (4 bytes quat-128)?
+            // Or simplified PLY.
+            
+            // The library supports loading native standard PLY.
+            // Let's create a STANDARD PLY buffer in memory.
+            // Standard PLY expected by this viewer: x,y,z, nx,ny,nz, f_dc_0,1,2, opacity, scale_0,1,2, rot_0,1,2,3
+            // ML-Sharp has: x,y,z, f_dc_0,1,2, opacity(logit), scale_0,1,2(log), rot_0,1,2,3
+            
+            // We just need to transform the VALUES of opacity and scale.
+            // Opacity: sigmoid(val)
+            // Scale: exp(val)
+            // And potentially color from SH0 to RGB if we want "baked" color, 
+            // BUT viewer supports SH0 (f_dc_0...). 
+            // Does viewer support Logit Opacity? Likely NO.
+            // Does viewer support Log Scale? Likely NO.
+            
+            // So we rewrite the buffer.
+            const dstBuffer = new ArrayBuffer(vertexCount * 14 * 4); // 14 floats per vertex
+            const dstView = new Float32Array(dstBuffer);
+            
+            const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+            
+            let sumX=0, sumY=0, sumZ=0;
+            
+            for (let i = 0; i < vertexCount; i++) {
+                const off = i * 14;
+                
+                // Copy Pos
+                const x = srcData[off];
+                const y = srcData[off+1];
+                const z = srcData[off+2];
+                dstView[off] = x;
+                dstView[off+1] = y;
+                dstView[off+2] = z;
+                
+                sumX += x; sumY += y; sumZ += z;
+                
+                // Copy Color (SH0) - Viewer handles f_dc_0,1,2
+                dstView[off+3] = srcData[off+3];
+                dstView[off+4] = srcData[off+4];
+                dstView[off+5] = srcData[off+5];
+                
+                // Opacity: Logit -> Sigmoid
+                dstView[off+6] = sigmoid(srcData[off+6]);
+                
+                // Scale: Log -> Exp
+                dstView[off+7] = Math.exp(srcData[off+7]);
+                dstView[off+8] = Math.exp(srcData[off+8]);
+                dstView[off+9] = Math.exp(srcData[off+9]);
+                
+                // Copy Rot
+                dstView[off+10] = srcData[off+10];
+                dstView[off+11] = srcData[off+11];
+                dstView[off+12] = srcData[off+12];
+                dstView[off+13] = srcData[off+13];
+            }
+            
+            // 4. Create a Blob from this modified buffer prefixed with a standard PLY header
+            // We reuse the original header but we need to match the binary layout.
+            // Original header says "float x", "float y" ... which matches our layout (all floats).
+            // So we can just concatenate the original header with our new body!
+            // Wait, we need to make sure the header matches our data types (float32).
+            // ML-Sharp header is fine.
+            
+            const newBlob = new Blob([headerArr.slice(0, bodyOffset), dstBuffer], { type: 'application/octet-stream' });
+            const newUrl = URL.createObjectURL(newBlob);
+            
+            updateStatus("加载渲染器...", true);
+            
+            // Load into Viewer
+            try {
+                await viewer.addSplatScene(newUrl, {
+                    'splatAlphaRemovalThreshold': 5,
+                    'showLoadingUI': false,
+                    'position': [0, 0, 0],
+                    'rotation': [0, 0, 0, 1],
+                    'scale': [1, 1, 1]
+                });
+            } catch (err) {
+                 console.warn("Viewer load warning:", err);
+            }
+            
+            // Auto-Center Camera
+            const cx = sumX/vertexCount, cy = sumY/vertexCount, cz = sumZ/vertexCount;
+            // The viewer has its own camera controls.
+            // cleanViewer.camera.position.set(...) ?
+            // Better to move the Splat Mesh?
+            // Let's rely on manual interaction for now or use viewer API.
+            
+            updateStatus("完成", false);
+        }
+
+        // --- Handlers ---
+
+        document.getElementById('upload-btn').onclick = () => document.getElementById('file-input').click();
+        document.getElementById('load-ply-btn').onclick = () => document.getElementById('ply-input').click();
+        
+        document.getElementById('file-input').onchange = async (e) => {
+            if (!e.target.files[0]) return;
+            const formData = new FormData();
+            formData.append('file', e.target.files[0]);
+            try {
+                updateStatus("上传中...", true);
+                const res = await fetch('/api/predict', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(res.statusText);
+                const data = await res.json();
+                await loadAndConvertPly(data.url);
+            } catch (err) { alert(err.message); updateStatus("", false); }
+        };
+
+        document.getElementById('ply-input').onchange = async (e) => {
+             if (!e.target.files[0]) return;
+             const url = URL.createObjectURL(e.target.files[0]);
+             try { await loadAndConvertPly(url); } 
+             catch(err) { alert(err.message); }
+             // Don't revoke immediately, viewer needs it?
+        };
+
+    </script>
+</body>
+</html>

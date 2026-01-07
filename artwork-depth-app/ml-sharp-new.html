@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ML-Sharp 3DGS 查看器 (Custom)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        .ui-overlay {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); padding: 15px 25px; border-radius: 30px;
+            color: white; text-align: center; z-index: 100; backdrop-filter: blur(5px);
+            display: flex; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
+            z-index: 200; transition: opacity 0.5s;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        
+        button {
+            background: #007AFF; border: none; color: white; padding: 10px 24px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #007AFF; border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .stats {
+            position: absolute; top: 10px; left: 10px; color: rgba(255,255,255,0.5);
+            font-size: 12px;             pointer-events: none;
+        }
+    </style>
+    <!-- Vercel Analytics -->
+    <script src="/js/analytics.js"></script>
+</head>
+<body>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <div id="status-text" style="margin-top:15px; font-weight: 500;">准备就绪</div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="ui-overlay">
+        <div style="text-align: left;">
+            <div style="font-weight: 600;">ML-Sharp 3DGS (Custom Viewer)</div>
+            <div style="font-size: 12px; opacity: 0.6;">高性能自定义渲染器</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="upload-btn" style="background: #007AFF;">生成 3D (图片)</button>
+            <button id="load-ply-btn" style="background: #34c759;">查看 .ply 文件</button>
+        </div>
+        <input type="file" id="file-input" accept="image/*" hidden>
+        <input type="file" id="ply-input" accept=".ply" hidden>
+    </div>
+    
+    <canvas id="viewer-canvas"></canvas>
+
+    <script type="module">
+        import { Viewer } from './viewer/Viewer.js';
+
+        const canvas = document.getElementById('viewer-canvas');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const statusText = document.getElementById('status-text');
+        const statsDiv = document.getElementById('stats');
+        
+        let viewer = null;
+        
+        function updateStatus(text, show) {
+            statusText.innerText = text;
+            if (show) loadingOverlay.classList.remove('hidden');
+            else loadingOverlay.classList.add('hidden');
+        }
+
+        // Initialize viewer
+        try {
+            viewer = new Viewer(canvas, {
+                fov: 60,
+                near: 0.1,
+                far: 500
+            });
+            updateStatus("查看器已就绪", false);
+        } catch (error) {
+            updateStatus("初始化失败: " + error.message, true);
+            console.error(error);
+        }
+
+        // Handlers
+        document.getElementById('upload-btn').onclick = () => document.getElementById('file-input').click();
+        document.getElementById('load-ply-btn').onclick = () => document.getElementById('ply-input').click();
+        
+        document.getElementById('file-input').onchange = async (e) => {
+            if (!e.target.files[0] || !viewer) return;
+            
+            updateStatus("上传并生成中...", true);
+            
+            const formData = new FormData();
+            formData.append('file', e.target.files[0]);
+            
+            try {
+                const res = await fetch('/api/predict', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(res.statusText);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                
+                updateStatus("加载模型...", true);
+                await viewer.load(data.url);
+                
+                statsDiv.innerText = `${viewer.renderer.splatCount} splats`;
+                updateStatus("完成", false);
+            } catch (err) {
+                console.error(err);
+                alert("失败: " + err.message);
+                updateStatus("错误", false);
+            }
+        };
+
+        document.getElementById('ply-input').onchange = async (e) => {
+            if (!e.target.files[0] || !viewer) return;
+            
+            updateStatus("加载 PLY 文件...", true);
+            
+            try {
+                await viewer.load(e.target.files[0]);
+                statsDiv.innerText = `${viewer.renderer.splatCount} splats`;
+                updateStatus("完成", false);
+            } catch (err) {
+                console.error(err);
+                alert("加载失败: " + err.message);
+                updateStatus("错误", false);
+            }
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (viewer) {
+                viewer.dispose();
+            }
+        });
+
+    </script>
+</body>
+</html>

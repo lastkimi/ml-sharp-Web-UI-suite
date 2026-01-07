@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 艺术沉浸式工具集</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        .hero {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .hero h1 { margin: 0; font-size: 2.5em; font-weight: 300; }
+        .hero p { opacity: 0.8; margin-top: 10px; font-size: 1.1em; }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            height: 140px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+        
+        .card-body {
+            padding: 25px;
+            flex-grow: 1;
+        }
+        
+        .card-title {
+            font-size: 1.4em;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .card-desc {
+            color: #666;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .tag-basic { background: #e3f2fd; color: #1976d2; }
+        .tag-3d { background: #e8f5e9; color: #2e7d32; }
+        .tag-ar { background: #fff3e0; color: #ef6c00; }
+        .tag-ai { background: #f3e5f5; color: #7b1fa2; }
+
+    </style>
+    <!-- Vercel Analytics -->
+    <script src="/js/analytics.js"></script>
+    <script>
+        // Vercel Analytics will be auto-injected in production
+        if (typeof window !== 'undefined') {
+            // Track initial page load
+            window.addEventListener('load', function() {
+                if (window.va && window.va.track) {
+                    window.va.track('page_view', { path: window.location.pathname });
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>AI 艺术沉浸式工具集</h1>
+        <p>探索图像深度的无限可能，从 2D 到 3D 的交互式体验</p>
+    </div>
+
+    <div class="grid-container">
+        
+        <!-- Tool 1: Basic Blur -->
+        <a href="basic.html" class="card">
+            <div class="card-header" style="background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);">
+                📷
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">基础景深编辑器</h3>
+                <p class="card-desc">
+                    通过 AI 自动识别主体，调整背景虚化程度。适合快速制作具有单反级景深效果的照片。
+                </p>
+                <span class="tag tag-basic">入门工具</span>
+            </div>
+        </a>
+
+        <!-- Tool 2: Parallax -->
+        <a href="parallax.html" class="card">
+            <div class="card-header" style="background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);">
+                📱
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">2.5D 视差查看器</h3>
+                <p class="card-desc">
+                    利用陀螺仪或鼠标移动，模拟照片的立体感。轻量级方案，无需重型计算。
+                </p>
+                <span class="tag tag-3d">轻量级</span>
+            </div>
+        </a>
+
+        <!-- Tool 3: Immersive -->
+        <a href="immersive.html" class="card">
+            <div class="card-header" style="background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);">
+                👓
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">深度 AR 浏览</h3>
+                <p class="card-desc">
+                    使用 <b>Depth Anything</b> 模型生成真实 3D 地形。晃动设备可查看物体的侧面起伏。
+                </p>
+                <span class="tag tag-ar">AI 深度</span>
+            </div>
+        </a>
+
+        <!-- Tool 4: Layers -->
+        <a href="layers.html" class="card">
+            <div class="card-header" style="background: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);">
+                ✂️
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">3D 分层修复</h3>
+                <p class="card-desc">
+                    自动分离人像与背景，并使用算法<b>修复背景空洞</b>。实现真正的“透视背后内容”效果。
+                </p>
+                <span class="tag tag-ai">智能修复</span>
+            </div>
+        </a>
+
+        <!-- Tool 5: Outpainting -->
+        <a href="outpainting.html" class="card">
+            <div class="card-header" style="background: linear-gradient(to right, #434343 0%, black 100%); color: white;">
+                🌌
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">无限画布全景</h3>
+                <p class="card-desc">
+                    模拟生成画面边界之外的内容，构建 180° 沉浸式曲面空间。体验身临其境的 VR 感。
+                </p>
+                <span class="tag tag-ai">生成式扩展</span>
+            </div>
+        </a>
+
+        <!-- Tool 6: ML-Sharp 3DGS -->
+        <a href="ml-sharp.html" class="card">
+            <div class="card-header" style="background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%); color: white;">
+                💎
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">ML-Sharp 3DGS 生成器</h3>
+                <p class="card-desc">
+                    使用 Apple ML-Sharp 模型生成高精度 3D Gaussian Splats (.ply) 并实时渲染。
+                </p>
+                <span class="tag tag-ai">高精度 3D</span>
+            </div>
+        </a>
+
+    </div>
+
+</body>
+</html>
