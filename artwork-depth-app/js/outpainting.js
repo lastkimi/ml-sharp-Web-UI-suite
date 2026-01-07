@@ -233,6 +233,11 @@ function buildImmersiveScene(textureCanvas, depthCanvas) {
     
     // Also, let's adjust camera Z slightly to ensure we aren't clipping
     camera.position.set(0, 0, 0.1);
+    
+    // 激活 UI 控制（图片加载后自动隐藏按钮）
+    if (window.uiController) {
+        window.uiController.activate();
+    }
 }
 
 // 4. Interaction

@@ -55,6 +55,8 @@
         button:hover { background: #0056b3; }
         button:active { background: #004494; transform: scale(0.95); }
     </style>
+    <!-- UI Control -->
+    <script src="/js/ui-control.js"></script>
     <!-- Vercel Analytics -->
     <script src="/js/analytics.js"></script>
 </head>
@@ -134,6 +136,11 @@
                 
                 statsDiv.innerText = `${viewer.renderer.splatCount} splats`;
                 updateStatus("完成", false);
+                
+                // 激活 UI 控制（PLY 加载后自动隐藏按钮）
+                if (window.uiController) {
+                    window.uiController.activate();
+                }
             } catch (err) {
                 console.error(err);
                 alert("失败: " + err.message);
@@ -150,6 +157,11 @@
                 await viewer.load(e.target.files[0]);
                 statsDiv.innerText = `${viewer.renderer.splatCount} splats`;
                 updateStatus("完成", false);
+                
+                // 激活 UI 控制（PLY 加载后自动隐藏按钮）
+                if (window.uiController) {
+                    window.uiController.activate();
+                }
             } catch (err) {
                 console.error(err);
                 alert("加载失败: " + err.message);

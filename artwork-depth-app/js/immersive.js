@@ -140,6 +140,11 @@ function updateMesh(img, depthCanvas) {
     
     mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
+    
+    // 激活 UI 控制（图片加载后自动隐藏按钮）
+    if (window.uiController) {
+        window.uiController.activate();
+    }
 }
 
 // 4. Interaction (Gyro + Mouse)

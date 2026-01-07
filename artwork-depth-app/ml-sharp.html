@@ -58,6 +58,8 @@
             }
         }
     </script>
+    <!-- UI Control -->
+    <script src="/js/ui-control.js"></script>
     <!-- Vercel Analytics -->
     <script src="/js/analytics.js"></script>
 </head>
@@ -235,6 +237,11 @@
             // Let's rely on manual interaction for now or use viewer API.
             
             updateStatus("完成", false);
+            
+            // 激活 UI 控制（PLY 加载后自动隐藏按钮）
+            if (window.uiController) {
+                window.uiController.activate();
+            }
         }
 
         // --- Handlers ---

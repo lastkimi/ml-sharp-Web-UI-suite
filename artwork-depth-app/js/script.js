@@ -85,10 +85,74 @@ function handleImageUpload(e) {
             
             // 启用控件
             effectControls.classList.remove('disabled');
+            
+            // 激活 UI 控制（图片加载后自动隐藏按钮）
+            activateUIControl();
         };
         img.src = event.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+// 激活 UI 控制
+function activateUIControl() {
+    const controlsPanel = document.getElementById('controls-panel');
+    const pageHeader = document.getElementById('page-header');
+    let isVisible = true;
+    let autoHideTimer = null;
+    
+    // 点击屏幕切换显示/隐藏
+    document.addEventListener('click', function(e) {
+        // 如果点击的是控制面板本身，不切换
+        if (e.target.closest('#controls-panel')) {
+            return;
+        }
+        
+        if (isVisible) {
+            controlsPanel.classList.add('hidden');
+            if (pageHeader) pageHeader.classList.add('hidden');
+            isVisible = false;
+        } else {
+            controlsPanel.classList.remove('hidden');
+            if (pageHeader) pageHeader.classList.remove('hidden');
+            isVisible = true;
+            // 显示后 3 秒自动隐藏
+            scheduleAutoHide();
+        }
+    });
+    
+    // 触摸事件（移动端）
+    document.addEventListener('touchend', function(e) {
+        if (e.target.closest('#controls-panel')) {
+            return;
+        }
+        
+        if (isVisible) {
+            controlsPanel.classList.add('hidden');
+            if (pageHeader) pageHeader.classList.add('hidden');
+            isVisible = false;
+        } else {
+            controlsPanel.classList.remove('hidden');
+            if (pageHeader) pageHeader.classList.remove('hidden');
+            isVisible = true;
+            scheduleAutoHide();
+        }
+    });
+    
+    // 安排自动隐藏
+    function scheduleAutoHide() {
+        if (autoHideTimer) clearTimeout(autoHideTimer);
+        autoHideTimer = setTimeout(() => {
+            if (isVisible) {
+                controlsPanel.classList.add('hidden');
+                if (pageHeader) pageHeader.classList.add('hidden');
+                isVisible = false;
+            }
+        }, 3000);
+    }
+    
+    // 初始延迟隐藏
+    scheduleAutoHide();
 }
 
 // 执行分割 (核心逻辑)

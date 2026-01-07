@@ -308,6 +308,11 @@ function buildScene(img, depthCanvas, fgCanvas, bgCanvas) {
     fgMesh = new THREE.Mesh(fgGeo, fgMat);
     fgMesh.position.z = 0; // Center
     scene.add(fgMesh);
+    
+    // 激活 UI 控制（图片加载后自动隐藏按钮）
+    if (window.uiController) {
+        window.uiController.activate();
+    }
 }
 
 // 4. Interaction

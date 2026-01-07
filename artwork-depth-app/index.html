@@ -15,6 +15,11 @@
             color: #333;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
         .hero {
             background: linear-gradient(135deg, #2c3e50, #4ca1af);
             color: white;
@@ -31,7 +36,26 @@
             gap: 25px;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 20px 40px 20px;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .hero {
+                padding: 30px 15px;
+                margin-bottom: 25px;
+            }
+            .hero h1 {
+                font-size: 1.6em;
+            }
+            .hero p {
+                font-size: 0.9em;
+                padding: 0 10px;
+            }
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 18px;
+                padding: 0 15px 30px 15px;
+            }
         }
         
         .card {

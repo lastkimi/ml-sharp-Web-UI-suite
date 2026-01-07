@@ -103,7 +103,12 @@ body {
     .grid-container {
         grid-template-columns: 1fr;
         gap: 20px;
-        padding: 0 15px;
+        padding: 0 15px 30px 15px;
+    }
+    
+    /* 确保卡片在移动端有足够的间距 */
+    .card {
+        margin-bottom: 0;
     }
 
     .card {

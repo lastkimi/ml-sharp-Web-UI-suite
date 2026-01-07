@@ -17,6 +17,7 @@
             background: rgba(0,0,0,0.6); padding: 15px 25px; border-radius: 30px;
             color: white; text-align: center; z-index: 100; backdrop-filter: blur(5px);
             max-width: 90%;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .loading-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -36,6 +37,8 @@
     </style>
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- UI Control -->
+    <script src="/js/ui-control.js"></script>
     <!-- TensorFlow.js & BodyPix for better segmentation -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>

@@ -33,6 +33,7 @@
             text-align: center;
             z-index: 100;
             backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .ui-overlay button {
             background: #e67e22;
@@ -50,6 +51,8 @@
     </style>
     <!-- 引入 Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- UI Control -->
+    <script src="/js/ui-control.js"></script>
     <!-- Vercel Analytics -->
     <script src="/js/analytics.js"></script>
 </head>
