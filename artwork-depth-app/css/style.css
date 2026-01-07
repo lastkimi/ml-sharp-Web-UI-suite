@@ -52,26 +52,39 @@ header p {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: #000;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    margin: 0 !important;
-    border-radius: 0 !important;
-}
-
-canvas {
+    min-width: 100vw !important;
+    min-height: 100vh !important;
     max-width: 100vw !important;
     max-height: 100vh !important;
+    background-color: #000;
+    overflow: hidden;
+    display: block !important;
+    z-index: 1;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+}
+
+#canvas-container canvas,
+.canvas-container canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
     width: 100% !important;
     height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
     object-fit: contain;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .upload-prompt {

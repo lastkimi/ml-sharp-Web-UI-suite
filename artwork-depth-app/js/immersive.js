@@ -52,12 +52,51 @@ async function init() {
 // 2. Three.js Setup
 function initThreeJS() {
     // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:53',message:'initThreeJS entry',data:{innerWidth:window.innerWidth,innerHeight:window.innerHeight,devicePixelRatio:window.devicePixelRatio},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    const logData = {
+        location: 'immersive.js:53',
+        message: 'initThreeJS entry',
+        data: {
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+            bodyWidth: document.body.clientWidth,
+            bodyHeight: document.body.clientHeight
+        },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run2',
+        hypothesisId: 'A'
+    };
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData)}).catch(()=>{});
     // #endregion
+    
     const container = document.getElementById('canvas-container');
     
     // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:57',message:'container found',data:{containerExists:!!container,containerId:container?.id,containerComputedStyle:container?window.getComputedStyle(container).width+'x'+window.getComputedStyle(container).height:'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    if (container) {
+        const containerStyle = window.getComputedStyle(container);
+        const logData2 = {
+            location: 'immersive.js:62',
+            message: 'container found',
+            data: {
+                containerExists: true,
+                containerId: container.id,
+                containerWidth: containerStyle.width,
+                containerHeight: containerStyle.height,
+                containerPosition: containerStyle.position,
+                containerTop: containerStyle.top,
+                containerLeft: containerStyle.left,
+                containerDisplay: containerStyle.display,
+                containerOffsetWidth: container.offsetWidth,
+                containerOffsetHeight: container.offsetHeight
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run2',
+            hypothesisId: 'B'
+        };
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData2)}).catch(()=>{});
+    }
     // #endregion
     
     scene = new THREE.Scene();
@@ -69,24 +108,74 @@ function initThreeJS() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     
-    // #region agent log
     const canvasEl = renderer.domElement;
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:66',message:'renderer created, before append',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    
+    // #region agent log
+    const canvasStyleBefore = window.getComputedStyle(canvasEl);
+    const logData3 = {
+        location: 'immersive.js:85',
+        message: 'renderer created, before append',
+        data: {
+            canvasWidth: canvasEl.width,
+            canvasHeight: canvasEl.height,
+            canvasStyleWidth: canvasEl.style.width,
+            canvasStyleHeight: canvasEl.style.height,
+            computedWidth: canvasStyleBefore.width,
+            computedHeight: canvasStyleBefore.height,
+            computedPosition: canvasStyleBefore.position,
+            computedDisplay: canvasStyleBefore.display
+        },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'run2',
+        hypothesisId: 'E'
+    };
+    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData3)}).catch(()=>{});
     // #endregion
     
     container.appendChild(renderer.domElement);
     
     // 强制设置 canvas 元素为全屏样式
-    const canvasEl = renderer.domElement;
     canvasEl.style.position = 'absolute';
     canvasEl.style.top = '0';
     canvasEl.style.left = '0';
     canvasEl.style.width = '100%';
     canvasEl.style.height = '100%';
     canvasEl.style.display = 'block';
+    canvasEl.style.margin = '0';
+    canvasEl.style.padding = '0';
+    canvasEl.style.boxSizing = 'border-box';
     
     // #region agent log
-    fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'immersive.js:77',message:'after setting canvas styles',data:{canvasWidth:canvasEl.width,canvasHeight:canvasEl.height,canvasStyleWidth:canvasEl.style.width,canvasStyleHeight:canvasEl.style.height,computedWidth:window.getComputedStyle(canvasEl).width,computedHeight:window.getComputedStyle(canvasEl).height,containerComputedWidth:window.getComputedStyle(container).width,containerComputedHeight:window.getComputedStyle(container).height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    setTimeout(() => {
+        const canvasStyleAfter = window.getComputedStyle(canvasEl);
+        const containerStyleAfter = window.getComputedStyle(container);
+        const logData4 = {
+            location: 'immersive.js:105',
+            message: 'after setting canvas styles (delayed)',
+            data: {
+                canvasWidth: canvasEl.width,
+                canvasHeight: canvasEl.height,
+                canvasStyleWidth: canvasEl.style.width,
+                canvasStyleHeight: canvasEl.style.height,
+                computedWidth: canvasStyleAfter.width,
+                computedHeight: canvasStyleAfter.height,
+                computedPosition: canvasStyleAfter.position,
+                computedTop: canvasStyleAfter.top,
+                computedLeft: canvasStyleAfter.left,
+                containerComputedWidth: containerStyleAfter.width,
+                containerComputedHeight: containerStyleAfter.height,
+                containerComputedPosition: containerStyleAfter.position,
+                canvasOffsetWidth: canvasEl.offsetWidth,
+                canvasOffsetHeight: canvasEl.offsetHeight
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run2',
+            hypothesisId: 'C'
+        };
+        fetch('http://127.0.0.1:7247/ingest/93841103-6491-4b0e-9a7c-e6904db70b58',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData4)}).catch(()=>{});
+    }, 100);
     // #endregion
     
     // Ambient light
