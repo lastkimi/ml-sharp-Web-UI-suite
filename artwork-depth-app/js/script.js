@@ -66,18 +66,11 @@ function handleImageUpload(e) {
             originalWidth = img.width;
             originalHeight = img.height;
             
-            // 调整 canvas 尺寸以适应图片（这里做简单的限制，防止过大卡顿）
-            const maxDim = 800;
-            let scale = 1;
-            if (Math.max(originalWidth, originalHeight) > maxDim) {
-                scale = maxDim / Math.max(originalWidth, originalHeight);
-            }
+            // 设置 canvas 为全屏尺寸
+            resizeCanvas();
             
-            canvas.width = originalWidth * scale;
-            canvas.height = originalHeight * scale;
-            
-            // 绘制原图
-            ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+            // 绘制原图（铺满 canvas，保持宽高比）
+            drawImageToFillCanvas();
             uploadPrompt.style.display = 'none';
             
             // 开始分割
@@ -175,8 +168,8 @@ async function performSegmentation() {
         const threshold = parseFloat(thresholdSlider.value);
         thresholdValueDisplay.textContent = threshold;
 
-        // 执行分割
-        const segmentation = await net.segmentPerson(canvas, {
+        // 执行分割（在原始图片上进行，而不是 canvas）
+        const segmentation = await net.segmentPerson(currentImage, {
             flipHorizontal: false,
             internalResolution: 'medium',
             segmentationThreshold: threshold
@@ -224,13 +217,14 @@ function updateRender() {
     blurValueDisplay.textContent = blurRadius;
     const showMask = showMaskToggle.checked;
 
-    const w = canvas.width;
-    const h = canvas.height;
+    // 使用显示尺寸（而不是 canvas 的实际像素尺寸）
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
     // 1. 清空
     ctx.clearRect(0, 0, w, h);
 
-    // 2. 准备 Mask Canvas
+    // 2. 准备 Mask Canvas（使用显示尺寸）
     const maskCanvas = document.createElement('canvas');
     maskCanvas.width = w;
     maskCanvas.height = h;
@@ -248,7 +242,14 @@ function updateRender() {
         // BodyPix 的 toMask 生成的是 ImageData
         // 我们需要：主体部分不透明(Alpha=255)，背景透明(Alpha=0)
         const maskData = bodyPix.toMask(currentMask, {r:0,g:0,b:0,a:255}, {r:0,g:0,b:0,a:0});
-        maskCtx.putImageData(maskData, 0, 0);
+        // 将 maskData 缩放到显示尺寸
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = maskData.width;
+        tempCanvas.height = maskData.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.putImageData(maskData, 0, 0);
+        // 缩放绘制到 maskCanvas
+        maskCtx.drawImage(tempCanvas, 0, 0, w, h);
     }
     
     if (showMask) {
@@ -260,15 +261,35 @@ function updateRender() {
     }
 
     if (blurRadius === 0) {
-        ctx.drawImage(currentImage, 0, 0, w, h);
+        drawImageToFillCanvas();
         return;
     }
 
     // --- 合成逻辑 ---
-    // 1. 绘制模糊背景层
+    // 计算图片铺满 canvas 的尺寸和位置
+    const imgAspect = originalWidth / originalHeight;
+    const canvasAspect = w / h;
+    
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    if (imgAspect > canvasAspect) {
+        // 图片更宽，以宽度为准
+        drawWidth = w;
+        drawHeight = w / imgAspect;
+        offsetX = 0;
+        offsetY = (h - drawHeight) / 2;
+    } else {
+        // 图片更高，以高度为准
+        drawHeight = h;
+        drawWidth = h * imgAspect;
+        offsetX = (w - drawWidth) / 2;
+        offsetY = 0;
+    }
+
+    // 1. 绘制模糊背景层（铺满 canvas）
     ctx.save();
     ctx.filter = `blur(${blurRadius}px)`;
-    ctx.drawImage(currentImage, 0, 0, w, h);
+    ctx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
     ctx.restore();
 
     // 2. 绘制清晰主体层
@@ -278,7 +299,7 @@ function updateRender() {
     cleanCanvas.height = h;
     const cleanCtx = cleanCanvas.getContext('2d');
     
-    cleanCtx.drawImage(currentImage, 0, 0, w, h);
+    cleanCtx.drawImage(currentImage, offsetX, offsetY, drawWidth, drawHeight);
     
     // 应用遮罩：destination-in 会保留与新图形重叠且不透明的部分
     // 注意：MaskCanvas 中不透明的部分是我们要保留清晰的
