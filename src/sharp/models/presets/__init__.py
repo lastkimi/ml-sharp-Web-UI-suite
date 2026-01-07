@@ -3,6 +3,7 @@
 For licensing see accompanying LICENSE file.
 Copyright (C) 2025 Apple Inc. All Rights Reserved.
 """
+from __future__ import annotations
 
 from .monodepth import (
     MONODEPTH_ENCODER_DIMS_MAP,

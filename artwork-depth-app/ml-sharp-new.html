@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>ML-Sharp 3DGS 查看器 (Custom)</title>
+    <link rel="stylesheet" href="css/mobile.css">
     <style>
         body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+        canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
         
         .ui-overlay {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.8); padding: 15px 25px; border-radius: 30px;
             color: white; text-align: center; z-index: 100; backdrop-filter: blur(5px);
             display: flex; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap; justify-content: center;
         }
         
         .loading-overlay {
@@ -38,8 +43,17 @@
         
         .stats {
             position: absolute; top: 10px; left: 10px; color: rgba(255,255,255,0.5);
-            font-size: 12px;             pointer-events: none;
+            font-size: 12px; pointer-events: none;
         }
+        
+        button {
+            background: #007AFF; border: none; color: white; padding: 10px 24px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px;
+            transition: background 0.2s; min-height: 44px; min-width: 44px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:hover { background: #0056b3; }
+        button:active { background: #004494; transform: scale(0.95); }
     </style>
     <!-- Vercel Analytics -->
     <script src="/js/analytics.js"></script>
